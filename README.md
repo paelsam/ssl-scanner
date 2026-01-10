@@ -70,4 +70,4 @@ sequenceDiagram
     S->>U: reporte
 ```
 
-Realizado por Elkin Angulo - [GitHub](phttps://github.com/paelsam)
+Realizado por Elkin Angulo - [GitHub](https://github.com/paelsam)
