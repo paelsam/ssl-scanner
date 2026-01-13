@@ -1,7 +1,7 @@
 package model
 
 type Info struct {
-	Version              string   `json:"version"`
+	EngineVersion        string   `json:"engineVersion"`
 	CriteriaVersion      string   `json:"criteriaVersion"`
 	MaxAssessments       int      `json:"maxAssessments"`
 	CurrentAssessments   int      `json:"currentAssessments"`

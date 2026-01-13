@@ -104,7 +104,7 @@ func showServiceInfo(ctx context.Context, scanner *service.Scanner) int {
 	}
 
 	fmt.Println("Información del Servicio SSL Labs")
-	fmt.Printf("Versión del motor: %s\n", info.Version)
+	fmt.Printf("Versión del motor: %s\n", info.EngineVersion)
 	fmt.Printf("Versión de criterios: %s\n", info.CriteriaVersion)
 	fmt.Printf("Análisis máximos concurrentes: %d\n", info.MaxAssessments)
 	fmt.Printf("Análisis actuales: %d\n", info.CurrentAssessments)
