@@ -382,10 +382,3 @@ func (f *Formatter) reset() string {
 func (f *Formatter) separator() string {
 	return strings.Repeat("═", 60)
 }
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
