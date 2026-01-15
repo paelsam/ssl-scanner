@@ -80,6 +80,22 @@ func (s *Scanner) RunAnalysis(ctx context.Context, domain string) (*model.Host, 
 		return host, nil
 	}
 
+	// Verificar que la caché tenga los resultados antes de hacer polling (con CheckDomainInCache)
+	cacheFilePath := fmt.Sprintf("cache/%s.json", domain)
+	inCache, err := client.CheckDomainInCache(cacheFilePath, domain)
+	if err != nil {
+		return nil, fmt.Errorf("error al verificar caché: %w", err)
+	}
+	if inCache {
+		host, err := client.LoadLocalCache(cacheFilePath, domain)
+		if err == nil {
+			return host, nil
+		}
+		// Si hay error al cargar la caché, continuar con el polling
+	}
+
+
+
 	return s.pollAnalysisStatus(ctx, domain)
 }
 
@@ -100,12 +116,24 @@ func (s *Scanner) pollAnalysisStatus(ctx context.Context, domain string) (*model
 		}
 
 		host, err := s.client.CheckAnalysisStatus(ctx, domain)
+
+		// Guardad host en caché local cada vez que se obtiene un estado actualizado
+		cacheFilePath := fmt.Sprintf("cache/%s.json", domain)
+		if err == nil {
+			saveErr := client.SaveToLocalCache(cacheFilePath, host)
+			if saveErr != nil {
+				fmt.Printf("Advertencia: no se pudo guardar en caché local: %v\n", saveErr)
+			}
+		}
+
 		if err != nil {
 			return nil, fmt.Errorf("error al consultar estado: %w", err)
 		}
 
 		switch host.Status {
 		case StatusReady:
+			
+
 			return host, nil
 		case StatusError:
 			return nil, fmt.Errorf("el análisis terminó con error: %s", host.StatusMessage)

@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
 	"sslscanner/model"
@@ -94,6 +95,65 @@ func (c *Client) CheckAnalysisStatus(ctx context.Context, domain string) (*model
 	var host model.Host
 	if err := json.Unmarshal(body, &host); err != nil {
 		return nil, fmt.Errorf("falló al decodificar respuesta de estado: %w", err)
+	}
+
+	return &host, nil
+}
+
+// función para añadir a la caché (carpeta cache) los resultados de manera local recibe el host resultado y la ruta del archivo donde se guardará
+// con base a un dominio específico
+func SaveToLocalCache(filePath string, host *model.Host) error {
+	data, err := json.MarshalIndent(host, "", "  ")
+	if err != nil {
+		return fmt.Errorf("falló al codificar caché: %w", err)
+	}
+
+	if err := os.WriteFile(filePath, data, 0644); err != nil {
+		return fmt.Errorf("falló al escribir caché en archivo: %w", err)
+	}
+
+	return nil
+}
+
+func CheckDomainInCache(filePath string, domain string) (bool, error) {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil // El archivo no existe, por lo que no está en caché
+		}
+		return false, fmt.Errorf("falló al leer caché desde archivo: %w", err)
+	}
+
+	var host model.Host
+	if err := json.Unmarshal(data, &host); err != nil {
+		return false, fmt.Errorf("falló al decodificar caché: %w", err)
+	}
+
+	// Verificar que el dominio coincida
+	if host.Host == domain {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+// función para cargar la caché de los resultados desde un archivo local dependiendo del dominio específico
+// parámetros: ruta del archivo donde se encuentra la caché
+// retorna: host resultado y error en caso de que ocurra algún problema
+func LoadLocalCache(filePath string, domain string) (*model.Host, error) {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("falló al leer caché desde archivo: %w", err)
+	}
+
+	var host model.Host
+	if err := json.Unmarshal(data, &host); err != nil {
+		return nil, fmt.Errorf("falló al decodificar caché: %w", err)
+	}
+
+	// Verificar que el dominio coincida
+	if host.Host != domain {
+		return nil, fmt.Errorf("la caché no corresponde al dominio solicitado")
 	}
 
 	return &host, nil

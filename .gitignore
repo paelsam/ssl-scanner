@@ -22,3 +22,6 @@ debug/
 *.test
 *.out
 coverage.html
+
+# cache
+cache/*
